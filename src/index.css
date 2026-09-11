@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme inline {
+  --font-display: 'Anton', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --color-acid: #d4f53c;
+  --color-dark: #0a0a0a;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background-color: #0a0a0a;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+}
+
+.font-display {
+  font-family: 'Anton', sans-serif;
+}
