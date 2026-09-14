@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from "react";
-import heroPhoto from "@/imports/ChatGPT_Image_Sep_8__2026__04_33_05_PM.png";
+import heroPhoto from "@/imports/My_Picture.png";
+import homeRender from "@/imports/Home_Render-3D_Envirorment.jpg";
+import mathEdgeGif from "@/imports/Math_Edge-Motion_Graphic.gif";
+import homeDashboard from "@/imports/Home_Dashboards-1.png";
+import cloudSphereDashboard from "@/imports/CloudSphere_Dashboard.png";
+import randoIcon from "@/imports/Rando_Icon.jpg";
+import rendermaticLogo from "@/imports/Rendermatic_Logo.jpg";
+import lifeChoicesLogo from "@/imports/Life_Choices_Logo.jpg";
+import oaklandsLogo from "@/imports/Oaklands_Logo.png";
 
 const NAV_LINKS = ["Home", "About", "Work", "Skills", "Contact"];
 
@@ -11,22 +19,22 @@ const PROJECTS = [
     desc: "Full Salesforce org setup for a renewable energy company — role hierarchies, custom objects, validation rules, and automated sharing across Sales & Ops.",
   },
   {
-    title: "SOLAR FORCE SALES APP",
-    category: "Salesforce Flow & Automation",
-    img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&h=400&fit=crop&auto=format",
-    desc: "Built a sun-themed Lightning App with lead queues, a real-time Sales Dashboard, and Flow automations that replaced all manual handovers.",
+    title: "CLOUDSPHERE TECH SUPPORT",
+    category: "Salesforce Service Cloud",
+    img: cloudSphereDashboard,
+    desc: "Configured a 3-tiered case management system for a cloud services company — custom record types, escalation rules, Flow automation, and a real-time support dashboard.",
   },
   {
-    title: "3D ENVIRONMENTS",
+    title: "MODERN HOME",
     category: "3D Generalist — Rendermatic",
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop&auto=format",
+    img: homeRender,
     desc: "Compositing, photo editing, and 3D colour management work completed during an internship at Cape Town-based studio Rendermatic.",
   },
   {
-    title: "ARCHITECTURE & ENVIRONMENTS",
-    category: "Freelance — My Africa Sport",
-    img: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&h=400&fit=crop&auto=format",
-    desc: "2D and 3D architectural renditions and environment designs created for multiple teams across My Africa Sport.",
+    title: "MATH EDGE",
+    category: "Motion Graphics — My Africa Sport",
+    img: mathEdgeGif,
+    desc: "Motion graphic and visual identity work produced as a Freelance 3D Generalist for My Africa Sport, covering 2D animation and environment design.",
   },
 ];
 
@@ -44,21 +52,25 @@ const SKILL_TAGS = [
   "Photoshop", "Illustrator", "3D Animation", "Image Compositing",
 ];
 
+
 const TESTIMONIALS = [
   {
     name: "Rendermatic Studio",
     role: "3D Generalist Internship, Cape Town",
     quote: "Recognised for exceptional growth, passion, punctuality, and talent. Completed every task with efficiency and excellence, while bringing strong communication and problem-solving to every project.",
+    logoKey: "rendermatic",
   },
   {
     name: "Life Choices Academy",
     role: "Youth Force Project — Salesforce Track",
     quote: "Demonstrated leadership capabilities by taking on project lead roles and guiding the cohort as a primary point of contact. Earned 100+ Trailhead badges alongside Cisco Data Science and Cybersecurity credentials.",
+    logoKey: "lifechoices",
   },
   {
     name: "Oaklands High School",
     role: "Grade 12 Prefect & Class Representative",
     quote: "Featured on national television for exceptional performance in a competitive coding and programming initiative. Hand-selected for advanced artistic development at the Peter Clarke Art Centre.",
+    logoKey: "oaklands",
   },
 ];
 
@@ -78,6 +90,8 @@ export default function App() {
   const [openSkill, setOpenSkill] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(false);
 
   const sectionRefs = {
     home: useRef<HTMLElement>(null),
@@ -103,11 +117,36 @@ export default function App() {
     setMenuOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    setSending(true);
+    setSendError(false);
+    try {
+      const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_id: import.meta.env.VITE_EMAILJS_SERVICE_ID,
+          template_id: import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+          user_id: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+          template_params: {
+            from_name: formData.name,
+            from_email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+          },
+        }),
+      });
+      if (!res.ok) throw new Error("send failed");
+      setSubmitted(true);
+      setFormData({ name: "", email: "", subject: "", message: "" });
+      setTimeout(() => setSubmitted(false), 4000);
+    } catch {
+      setSendError(true);
+      setTimeout(() => setSendError(false), 4000);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -115,7 +154,7 @@ export default function App() {
 
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-5 bg-[#0a0a0a]/90 backdrop-blur-sm border-b border-white/5">
-        <span className="font-display text-lg tracking-widest text-white">LH</span>
+        <img src={randoIcon} alt="Rando Icon" className="w-9 h-9 rounded-full object-cover" />
         <div className="hidden md:flex gap-8">
           {NAV_LINKS.map((link) => (
             <button
@@ -148,67 +187,70 @@ export default function App() {
       )}
 
       {/* HERO */}
-      <section id="home" ref={sectionRefs.home} className="min-h-screen flex items-end pb-16 pt-28 px-6 md:px-10 bg-[#0a0a0a]">
-        <div className="max-w-6xl mx-auto w-full">
-          <div className="flex flex-col md:flex-row md:items-end gap-10">
-            {/* Left: text */}
-            <div className="flex-1">
-              <div className="mb-8">
-                <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-white">
-                  I'M LOYISO
-                </h1>
-                <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-white flex items-center gap-4 flex-wrap">
-                  HANS
-                  <span className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#d4f53c] text-[#0a0a0a] text-2xl md:text-3xl font-bold">✦</span>
-                </h1>
-                <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-white">
-                  SALESFORCE
-                </h1>
-                <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-white">
-                  ADMIN &
-                </h1>
-                <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-[#d4f53c]">
-                  DIGITAL CREATIVE
-                </h1>
-              </div>
-              <p className="text-white/50 text-sm leading-relaxed mb-6 max-w-md">
-                Salesforce Administrator based in Cape Town — configuring and optimising CRM environments for real businesses, from building role hierarchies to automating workflows with Salesforce Flow. Backed by a creative foundation in 3D, motion, and web development.
-              </p>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-                <button
-                  onClick={() => scrollTo("contact")}
-                  className="flex items-center gap-2 text-sm text-white border-b border-white/30 pb-1 hover:text-[#d4f53c] hover:border-[#d4f53c] transition-colors w-fit"
-                >
-                  Get in touch <span>↗</span>
-                </button>
-                <div className="flex gap-3 flex-wrap">
-                  {[
-                    { label: "LINKEDIN", url: "https://www.linkedin.com/in/loyiso-hans" },
-                    { label: "ARTSTATION", url: "https://mrrando.artstation.com/" },
-                    { label: "YOUTUBE", url: "https://www.youtube.com/@MrRanddo" },
-                  ].map((s) => (
-                    <a
-                      key={s.label}
-                      href={s.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs border border-white/20 rounded-full px-4 py-1.5 text-white/50 hover:border-[#d4f53c] hover:text-[#d4f53c] transition-colors"
-                    >
-                      {s.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
+      <section id="home" ref={sectionRefs.home} className="relative min-h-screen flex items-end pb-16 pt-28 px-6 md:px-10 bg-[#0a0a0a] overflow-hidden">
+        {/* Photo — bleeds to the right edge */}
+        <div className="hidden md:block absolute top-0 right-0 w-[48%] h-full">
+          <img
+            src={heroPhoto}
+            alt="Loyiso Hans"
+            className="w-full h-full object-cover object-top"
+          />
+          {/* fade into page background on the left */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/30 to-transparent" />
+          {/* subtle fade at the bottom */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/60 via-transparent to-transparent" />
+        </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto w-full">
+          <div className="max-w-[58%] md:max-w-[55%]">
+            <div className="mb-8">
+              <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-white">
+                I'M LOYISO
+              </h1>
+              <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-white flex items-center gap-4 flex-wrap">
+                HANS
+                <span className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#d4f53c]">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7" fill="#0a0a0a">
+                  <path d="M12 2 L13.8 10.2 L22 12 L13.8 13.8 L12 22 L10.2 13.8 L2 12 L10.2 10.2 Z" />
+                </svg>
+              </span>
+              </h1>
+              <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-white">
+                SALESFORCE
+              </h1>
+              <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-white">
+                ADMIN &
+              </h1>
+              <h1 className="font-display text-[clamp(3rem,8.5vw,7.5rem)] leading-none uppercase tracking-tight text-[#d4f53c]">
+                DIGITAL CREATIVE
+              </h1>
             </div>
-            {/* Right: photo */}
-            <div className="hidden md:block w-[38%] shrink-0 self-end">
-              <div className="relative w-full aspect-[3/4] rounded-sm overflow-hidden border border-white/10">
-                <img
-                  src={heroPhoto}
-                  alt="Loyiso Hans"
-                  className="w-full h-full object-cover object-top"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/40 to-transparent" />
+            <p className="text-white/60 text-sm leading-relaxed mb-6 max-w-md">
+              Salesforce Administrator based in Cape Town — configuring and optimising CRM environments for real businesses, from building role hierarchies to automating workflows with Salesforce Flow. Backed by a creative foundation in 3D, motion, and web development.
+            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+              <button
+                onClick={() => scrollTo("contact")}
+                className="flex items-center gap-2 text-sm text-white border-b border-white/30 pb-1 hover:text-[#d4f53c] hover:border-[#d4f53c] transition-colors w-fit"
+              >
+                Get in touch <span>↗</span>
+              </button>
+              <div className="flex gap-3 flex-wrap">
+                {[
+                  { label: "LINKEDIN", url: "https://www.linkedin.com/in/loyiso-hans" },
+                  { label: "ARTSTATION", url: "https://mrrando.artstation.com/" },
+                  { label: "YOUTUBE", url: "https://www.youtube.com/@MrRanddo" },
+                ].map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs border border-white/20 rounded-full px-4 py-1.5 text-white/50 hover:border-[#d4f53c] hover:text-[#d4f53c] transition-colors"
+                  >
+                    {s.label}
+                  </a>
+                ))}
               </div>
             </div>
           </div>
@@ -241,10 +283,23 @@ export default function App() {
         </div>
       </section>
 
-      {/* FULL WIDTH PHOTO */}
-      <section id="about" ref={sectionRefs.about} className="relative h-[60vh] md:h-[75vh] overflow-hidden">
-        <img src={heroPhoto} alt="Loyiso Hans — Salesforce Administrator & Digital Creative" className="w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+      {/* MARQUEE 1 */}
+      <section className="bg-[#0a0a0a] border-y border-white/5 py-8 overflow-hidden">
+        <div className="flex gap-12 items-center" style={{ width: "max-content", animation: "marquee 20s linear infinite" }}>
+          {[...BRANDS, ...BRANDS].map((b, i) => (
+            <span key={i} className="text-white/50 text-sm font-medium whitespace-nowrap hover:text-[#d4f53c] transition-colors cursor-default px-2">{b}</span>
+          ))}
+        </div>
+      </section>
+
+      {/* FULL WIDTH DASHBOARD */}
+      <section id="about" ref={sectionRefs.about} className="relative overflow-hidden bg-[#0d0d0d]">
+        <img
+          src={homeDashboard}
+          alt="Salesforce HealthConnect dashboard built by Loyiso Hans"
+          className="w-full h-auto block"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/50 via-transparent to-transparent pointer-events-none" />
       </section>
 
       {/* BIO + EXPERIENCE */}
@@ -315,6 +370,15 @@ export default function App() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* MARQUEE 2 — reverse direction */}
+      <section className="bg-[#0f0f0f] border-y border-white/5 py-8 overflow-hidden">
+        <div className="flex gap-12 items-center" style={{ width: "max-content", animation: "marquee 30s linear infinite reverse" }}>
+          {[...BRANDS, ...BRANDS].map((b, i) => (
+            <span key={i} className="text-white/50 text-sm font-medium whitespace-nowrap hover:text-[#d4f53c] transition-colors cursor-default px-2">{b}</span>
+          ))}
         </div>
       </section>
 
@@ -394,8 +458,12 @@ export default function App() {
                 }`}
               >
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-full bg-[#d4f53c]/10 border border-[#d4f53c]/30 flex items-center justify-center text-sm font-display text-[#d4f53c]">
-                    {t.name[0]}
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-[#d4f53c]/30 bg-white flex items-center justify-center shrink-0">
+                    <img
+                      src={t.logoKey === "rendermatic" ? rendermaticLogo : t.logoKey === "lifechoices" ? lifeChoicesLogo : oaklandsLogo}
+                      alt={t.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <p className="text-sm font-medium">{t.name}</p>
@@ -488,10 +556,16 @@ export default function App() {
               />
               <button
                 type="submit"
-                className="w-full bg-[#d4f53c] text-[#0a0a0a] font-display tracking-widest text-sm py-4 rounded-sm hover:bg-white transition-colors"
+                disabled={sending}
+                className="w-full bg-[#d4f53c] text-[#0a0a0a] font-display tracking-widest text-sm py-4 rounded-sm hover:bg-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {submitted ? "SENT ✓" : "SUBMIT"}
+                {sending ? "SENDING…" : submitted ? "SENT ✓" : sendError ? "FAILED — TRY AGAIN" : "SUBMIT"}
               </button>
+              {sendError && (
+                <p className="text-red-400 text-xs text-center mt-2">
+                  Something went wrong. Check your EmailJS setup or email me directly at loyisohanss@gmail.com
+                </p>
+              )}
             </form>
           </div>
         </div>
